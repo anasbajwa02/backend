@@ -1,0 +1,13 @@
+# Environment files
+.env
+*.env
+.env.*
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# VS Code settings
+.vscode/
