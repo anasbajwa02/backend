@@ -1,3 +1,6 @@
+
+//   this file is for handling api errors 
+
 class ApiError extends Error{
     constructor(
         statusCode,
