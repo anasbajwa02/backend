@@ -5,6 +5,8 @@ import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import jwt from "jsonwebtoken";
 
+// genrate access and refresh tokens
+
 const genrateAccessAndRefreshTokens = async (userId) => {
   try {
     const user = await User.findById(userId);
@@ -22,6 +24,8 @@ const genrateAccessAndRefreshTokens = async (userId) => {
     );
   }
 };
+
+// register the user
 
 const registerUser = asyncHandler(async (req, res) => {
   const { username, email, fullName, password } = req.body;
@@ -86,6 +90,8 @@ const registerUser = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, createdUser, "User registered successfully"));
 });
 
+// login user
+
 const LoginUser = asyncHandler(async (req, res) => {
   const { email, username, password } = req.body;
   console.log(email, " in log");
@@ -136,6 +142,8 @@ const LoginUser = asyncHandler(async (req, res) => {
       )
     );
 });
+
+// logout user
 
 const LogoutUser = asyncHandler(async (req, res) => {
   await User.findByIdAndUpdate(
@@ -205,6 +213,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
+// change the user password (update)
+
 const changeCurrentPassword = asyncHandler(async (req, res) => {
   const { oldPassword, newPassword } = req.body;
 
@@ -222,33 +232,94 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, {}, "Password changed Successfully"));
 });
 
+// get current user
+
 const getCurrentUser = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(200, req.user, "current user fetched successfully!");
 });
 
+// updated user information (update)
 
-const updateAccountDetails = asyncHandler(async(req,res)=>{
+const updateAccountDetails = asyncHandler(async (req, res) => {
+  const { fullName, email } = req.body;
 
-  const {fullName,email} = req.body
-
-  if(!fullName || !email){
-    throw new ApiError(400,"All fields are required")
-
+  if (!fullName || !email) {
+    throw new ApiError(400, "All fields are required");
   }
 
-  const user = User.findByIdAndUpdate(req.user?._id,{
-    $set:{
-      fullName,
-      email
-    }
-  },{new:true}).select("-password")
+  const user = User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        fullName,
+        email,
+      },
+    },
+    { new: true }
+  ).select("-password");
 
   return res
-  .status(200)
-  .json(new ApiResponse(200,user,"Account details updated successfully"))
-})
+    .status(200)
+    .json(new ApiResponse(200, user, "Account details updated successfully"));
+});
+
+// update user avatar image (update)
+
+const updateuserAvtar = asyncHandler(async (req, res) => {
+  const avatarLocalPath = req.file?.path;
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar file is require");
+  }
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+  if (!avatar.url) {
+    throw new ApiError(400, "Error while uploading on avatar");
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        avatar: avatar.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "Avatar image updated successfully "));
+});
+
+// update user cover image (update)
+
+const updateuserCoverIamge = asyncHandler(async (req, res) => {
+  const coverImageLocalPath = req.file?.path;
+  if (!coverImageLocalPath) {
+    throw new ApiError(400, "cover file is require");
+  }
+  const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+
+  if (!coverImage.url) {
+    throw new ApiError(400, "Error while uploading  Cover image");
+  }
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        coverImage: coverImage.url,
+      },
+    },
+    {
+      new: true,
+    }
+  ).select("-password");
+  return res
+    .status(200)
+    .json(new ApiResponse(200, user, "cover image updated successfully "));
+});
 
 export {
   registerUser,
@@ -258,5 +329,6 @@ export {
   changeCurrentPassword,
   getCurrentUser,
   updateAccountDetails,
-  
+  updateuserCoverIamge,
+  updateuserAvtar,
 };
